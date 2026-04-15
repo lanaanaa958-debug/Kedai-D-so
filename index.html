@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kedai D'so | Kuliner & Alam Wirosari</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Tetap untuk ikon umum lainnya) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Animations CSS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfbf7;
+        }
+
+        @keyframes slowZoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .animate-slow-zoom { animation: slowZoom 20s linear infinite alternate; }
+        .animate-blob { animation: blob 7s infinite alternate; }
+        .animation-delay-2000 { animation-delay: 2s; }
+
+        /* Scroll Reveal Base Classes */
+        .reveal {
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-up { opacity: 0; transform: translateY(3rem); }
+        .reveal-down { opacity: 0; transform: translateY(-3rem); }
+        .reveal-right { opacity: 0; transform: translateX(-3rem); }
+        .reveal-scale { opacity: 0; transform: scale(0.9); }
+        .reveal-visible { opacity: 1; transform: translate(0) scale(1); }
+    </style>
+</head>
+<body class="text-gray-800 overflow-x-hidden relative">
+
+    <!-- Lightbox / Image Modal -->
+    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm items-center justify-center p-4 sm:p-8" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-white hover:text-emerald-400 bg-black/50 p-2 rounded-full transition-colors z-50" onclick="closeLightbox()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <img id="lightbox-img" src="" alt="Menu Detail" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-[slowZoom_0.3s_ease-out_forwards]" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-transparent py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-2 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <i data-lucide="leaf" id="nav-icon" class="h-8 w-8 text-emerald-400 transition-all duration-500 group-hover:rotate-12"></i>
+                    <span id="nav-text" class="font-bold text-2xl tracking-tight text-white drop-shadow-md transition-colors">Kedai D'so</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#beranda" class="nav-link font-medium transition-all hover:text-emerald-500 relative group text-gray-100">Beranda<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span></a>
+                    <a href="#tentang" class="nav-link font-medium transition-all hover:text-emerald-500 relative group text-gray-100">Tentang<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span></a>
+                    <a href="#menu" class="nav-link font-medium transition-all hover:text-emerald-500 relative group text-gray-100">Menu<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span></a>
+                    <a href="#lokasi" class="nav-link font-medium transition-all hover:text-emerald-500 relative group text-gray-100">Lokasi<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span></a>
+                    <a href="https://wa.me/6281329720342" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-full font-medium transition-all shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)] hover:-translate-y-0.5 active:scale-95">
+                        Pesan Sekarang
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" id="menu-btn" class="focus:outline-none transition-colors text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="md:hidden absolute w-full bg-white shadow-xl transition-all duration-500 overflow-hidden max-h-0 opacity-0">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="#beranda" onclick="toggleMobileMenu()" class="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-md">Beranda</a>
+                <a href="#tentang" onclick="toggleMobileMenu()" class="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-md">Tentang</a>
+                <a href="#menu" onclick="toggleMobileMenu()" class="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-md">Menu</a>
+                <a href="#lokasi" onclick="toggleMobileMenu()" class="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-md">Lokasi</a>
+                <a href="https://wa.me/6281329720342" class="block w-full text-center mt-4 bg-emerald-600 text-white px-5 py-3 rounded-md font-medium">Pesan Sekarang</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="beranda" class="relative pt-20 pb-32 flex items-center min-h-screen overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIB0mne_SOZb21TecoYaZJG_YEqe56pAAI3Dmsbfmv4VhCLPqLhidQxAQADAgADeQADOwQ" alt="Pemandangan Sawah Kedai D'so" class="w-full h-full object-cover animate-slow-zoom origin-center">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#fdfbf7]"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center md:items-start text-center md:text-left mt-16">
+            <div class="reveal reveal-down" style="transition-delay: 200ms;">
+                <span class="inline-block py-1.5 px-4 rounded-full bg-emerald-500/20 text-emerald-100 border border-emerald-400/30 text-sm font-semibold tracking-widest mb-6 backdrop-blur-md">KULINER & ALAM</span>
+            </div>
+            
+            <div class="reveal reveal-right" style="transition-delay: 400ms;">
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[1.1] mb-6 max-w-4xl drop-shadow-lg">
+                    Rasa Autentik di Tengah <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Sejuknya Sawah</span>
+                </h1>
+            </div>
+
+            <div class="reveal reveal-up" style="transition-delay: 600ms;">
+                <p class="text-lg sm:text-xl text-gray-200 mb-10 max-w-2xl font-light drop-shadow-md">
+                    Kedai D'so menawarkan pengalaman kuliner yang menenangkan. Nikmati hidangan lezat kami sambil memandangi hamparan hijau alam Kunden, Wirosari.
+                </p>
+            </div>
+
+            <div class="reveal reveal-up" style="transition-delay: 800ms;">
+                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <a href="#lokasi" class="group bg-emerald-600 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-1 flex items-center justify-center gap-2 overflow-hidden relative">
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                        Kunjungi Kami <i data-lucide="map-pin" class="w-5 h-5 animate-bounce"></i>
+                    </a>
+                    <a href="#menu" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-full font-bold text-lg transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+                        Lihat Menu
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wave Divider -->
+        <div class="absolute bottom-0 w-full leading-none z-10">
+            <svg class="block w-full h-12 md:h-24" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,119.96,201.39,103.54,242.45,94.02,283.47,76.54,321.39,56.44Z" fill="#fdfbf7"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Tentang Kami Section -->
+    <section id="tentang" class="py-24 relative">
+        <div class="absolute top-0 right-0 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute top-20 right-40 w-72 h-72 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                
+                <div class="reveal reveal-right relative group w-full h-[450px] sm:h-[550px]">
+                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-500 rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                    <img src="https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIB0Wne_SIqOXw-Y44oiIpAqDKKosGHAAI2Dmsbfmv4VpxDpYZVabxXAQADAgADeQADOwQ" class="absolute top-0 right-0 w-4/5 h-[350px] sm:h-[450px] rounded-3xl object-cover shadow-xl transition-transform duration-700 group-hover:scale-[1.03] z-10 border-4 border-[#fdfbf7]">
+                    <img src="https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIB02ne_SM75NZlmWtDWIg0PdElmEUUAAI4Dmsbfmv4VoDsDczSzrQJAQADAgADeQADOwQ" class="absolute bottom-0 left-0 w-3/5 h-[200px] sm:h-[250px] rounded-3xl object-cover shadow-2xl transition-transform duration-700 group-hover:scale-[1.05] group-hover:-translate-y-2 z-20 border-8 border-[#fdfbf7]">
+                </div>
+
+                <div class="space-y-8">
+                    <div class="reveal reveal-up" style="transition-delay: 100ms;">
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-emerald-950">Lebih Dari Sekadar <br/>Tempat Makan</h2>
+                        <div class="w-24 h-1.5 bg-emerald-500 rounded-full mt-6"></div>
+                    </div>
+                    
+                    <div class="reveal reveal-up" style="transition-delay: 200ms;">
+                        <p class="text-lg leading-relaxed text-gray-600">Berlokasi tepat di Area Sawah, Kunden, Kedai D'so lahir dari keinginan untuk memadukan cita rasa masakan nusantara dengan ketenangan alam.</p>
+                    </div>
+                    
+                    <div class="reveal reveal-up" style="transition-delay: 300ms;">
+                        <p class="text-lg leading-relaxed text-gray-600">Kami percaya bahwa suasana yang nyaman dapat membuat makanan terasa lebih nikmat. Di sini, semilir angin dan pemandangan asri akan menemani setiap suapan Anda.</p>
+                    </div>
+
+                    <div class="reveal reveal-up pt-8 border-t border-gray-200" style="transition-delay: 400ms;">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="group">
+                                <div class="bg-emerald-50 p-4 rounded-xl inline-block mb-4 group-hover:bg-emerald-600 transition-colors duration-300">
+                                    <i data-lucide="utensils" class="text-emerald-600 w-8 h-8 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 text-lg">Rasa Autentik</h4>
+                                <p class="text-gray-500">Resep bumbu pilihan terbaik</p>
+                            </div>
+                            <div class="group">
+                                <div class="bg-emerald-50 p-4 rounded-xl inline-block mb-4 group-hover:bg-emerald-600 transition-colors duration-300">
+                                    <i data-lucide="coffee" class="text-emerald-600 w-8 h-8 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 text-lg">Suasana Santai</h4>
+                                <p class="text-gray-500">Menyatu dengan alam asri</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galeri Menu -->
+    <section id="menu" class="py-24 bg-emerald-950 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="reveal reveal-up text-center mb-16">
+                <span class="text-emerald-400 font-semibold tracking-wider text-sm uppercase">Daftar Harga & Sajian</span>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mt-2 mb-4">Buku Menu Kedai D'so</h2>
+                <p class="text-emerald-100 max-w-2xl mx-auto text-lg">Klik gambar untuk memperbesar daftar harga, paket nasi kotak, dan menu prasmanan kami.</p>
+            </div>
+
+            <!-- Grid Menu Dinamis menggunakan Vanilla JS yang dirender di bawah -->
+            <div id="menu-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <!-- Javascript will populate this -->
+            </div>
+
+            <div class="reveal reveal-up mt-16 text-center" style="transition-delay: 500ms;">
+                <a href="https://www.instagram.com/kedaidso_?igsh=MTZseW1lMWJ0YmVwcA==" target="_blank" class="inline-flex items-center gap-3 bg-emerald-600 text-white px-8 py-4 rounded-full font-bold hover:bg-emerald-500 transition-colors active:scale-95 shadow-lg shadow-emerald-900/50">
+                    <!-- Inline SVG Instagram agar PASTI Muncul -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                    Lihat Keseharian Kami di Instagram
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lokasi dan Informasi -->
+    <section id="lokasi" class="py-24 bg-[#fdfbf7]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="reveal reveal-scale bg-white rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-100">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-10 lg:p-16 flex flex-col justify-center bg-white relative overflow-hidden">
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 text-emerald-50 opacity-50">
+                            <i data-lucide="leaf" class="w-64 h-64 rotate-45"></i>
+                        </div>
+                        <h2 class="text-4xl font-extrabold text-emerald-950 mb-10 relative z-10">Kunjungi Kami</h2>
+                        <div class="space-y-8 relative z-10">
+                            <div class="flex items-start gap-5 group">
+                                <div class="bg-emerald-100 p-4 rounded-2xl shrink-0 group-hover:bg-emerald-600 transition-colors">
+                                    <i data-lucide="clock" class="w-7 h-7 text-emerald-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl text-gray-900 mb-1">Jam Operasional</h4>
+                                    <p class="text-gray-600">Buka Setiap Hari (Rabu - Selasa)</p>
+                                    <p class="text-emerald-600 font-bold mt-1 text-lg">09:30 - 21:30 WIB</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-5 group">
+                                <div class="bg-emerald-100 p-4 rounded-2xl shrink-0 group-hover:bg-emerald-600 transition-colors">
+                                    <i data-lucide="map-pin" class="w-7 h-7 text-emerald-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl text-gray-900 mb-1">Lokasi Kami</h4>
+                                    <p class="text-gray-600 leading-relaxed">Area Sawah, Kunden, Kec. Wirosari,<br/>Kabupaten Grobogan, Jawa Tengah 58192</p>
+                                    <div class="inline-block mt-3 bg-emerald-50 border border-emerald-100 text-emerald-700 font-mono text-sm px-3 py-1.5 rounded-lg shadow-sm">📍 Plus Code: <span class="font-bold">W3CG+2R</span></div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-5 group">
+                                <div class="bg-emerald-100 p-4 rounded-2xl shrink-0 group-hover:bg-emerald-600 transition-colors">
+                                    <i data-lucide="phone" class="w-7 h-7 text-emerald-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl text-gray-900 mb-2">Reservasi & Kontak</h4>
+                                    <p class="text-gray-600 mb-4">Hubungi kami untuk pemesanan tempat atau katering.</p>
+                                    <a href="https://wa.me/6281329720342" target="_blank" class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:-translate-y-1 active:scale-95">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
+                                        Chat WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-[450px] lg:h-auto w-full bg-gray-200 relative group overflow-hidden">
+                        <div class="absolute inset-0 bg-emerald-900/10 pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                        <iframe src="https://maps.google.com/maps?q=W3CG%2B2R%20Kunden%2C%20Kabupaten%20Grobogan%2C%20Jawa%20Tengah&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" class="absolute inset-0 transition-transform duration-1000 group-hover:scale-105"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-emerald-950 text-emerald-400 py-12 border-t border-emerald-900 relative overflow-hidden">
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-900 rounded-full blur-3xl opacity-50"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="bg-emerald-900 p-2 rounded-lg group-hover:rotate-12 transition-transform">
+                    <i data-lucide="leaf" class="h-7 w-7 text-emerald-500"></i>
+                </div>
+                <span class="font-bold text-2xl text-emerald-50 tracking-tight">Kedai D'so</span>
+            </div>
+            <div class="text-center md:text-left text-sm text-emerald-300/80 font-medium">
+                &copy; <span id="year"></span> Kedai D'so.<br class="md:hidden"/> Area Sawah, Kunden, Wirosari.
+            </div>
+            <div class="flex gap-4">
+                <a href="https://www.instagram.com/kedaidso_?igsh=MTZseW1lMWJ0YmVwcA==" target="_blank" class="text-emerald-400 bg-emerald-900/50 border border-emerald-800 p-3 rounded-full hover:bg-emerald-500 hover:text-white transition-all hover:-translate-y-1">
+                    <!-- Inline SVG Instagram Bawah -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                </a>
+                <a href="https://wa.me/6281329720342" target="_blank" class="text-emerald-400 bg-emerald-900/50 border border-emerald-800 p-3 rounded-full hover:bg-emerald-500 hover:text-white transition-all hover:-translate-y-1">
+                    <!-- Inline SVG Phone Bawah -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // 1. Initialize Icons
+        lucide.createIcons();
+
+        // 2. Set Footer Year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // 3. Navbar Scroll Effect
+        const navbar = document.getElementById('navbar');
+        const navText = document.getElementById('nav-text');
+        const navIcon = document.getElementById('nav-icon');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const menuBtn = document.getElementById('menu-btn');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-[#fdfbf7]/95', 'backdrop-blur-md', 'shadow-md', 'py-2');
+                navbar.classList.remove('bg-transparent', 'py-4');
+                navText.classList.add('text-emerald-900');
+                navText.classList.remove('text-white', 'drop-shadow-md');
+                navIcon.classList.remove('text-emerald-400');
+                navIcon.classList.add('text-emerald-600');
+                menuBtn.classList.remove('text-white');
+                menuBtn.classList.add('text-gray-800');
+                navLinks.forEach(link => {
+                    link.classList.remove('text-gray-100');
+                    link.classList.add('text-gray-600');
+                });
+            } else {
+                navbar.classList.remove('bg-[#fdfbf7]/95', 'backdrop-blur-md', 'shadow-md', 'py-2');
+                navbar.classList.add('bg-transparent', 'py-4');
+                navText.classList.remove('text-emerald-900');
+                navText.classList.add('text-white', 'drop-shadow-md');
+                navIcon.classList.add('text-emerald-400');
+                navIcon.classList.remove('text-emerald-600');
+                menuBtn.classList.add('text-white');
+                menuBtn.classList.remove('text-gray-800');
+                navLinks.forEach(link => {
+                    link.classList.add('text-gray-100');
+                    link.classList.remove('text-gray-600');
+                });
+            }
+        });
+
+        // 4. Mobile Menu Toggle
+        let isMenuOpen = false;
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        function toggleMobileMenu() {
+            isMenuOpen = !isMenuOpen;
+            if(isMenuOpen) {
+                mobileMenu.classList.add('max-h-[400px]', 'opacity-100');
+                mobileMenu.classList.remove('max-h-0', 'opacity-0');
+                // Pakai SVG Statis supaya icon silang (X) pasti muncul
+                menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+            } else {
+                mobileMenu.classList.remove('max-h-[400px]', 'opacity-100');
+                mobileMenu.classList.add('max-h-0', 'opacity-0');
+                // Balik ke SVG Hamburger Menu
+                menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>';
+            }
+        }
+
+        // 5. Lightbox / Menu Gallery Data
+        const menuImages = [
+            { title: "Daftar Harga Makanan 1", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIByGne90h_Dv2gYil1Zjw7KLNoBrNJAAIkDmsbfmv4Vq7HSl2rIcAtAQADAgADeQADOwQ" },
+            { title: "Daftar Harga Makanan 2", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIByWne99IzI32At7J-mPFmK2LrxWNbAAIlDmsbfmv4VjpXpO8483OPAQADAgADeQADOwQ" },
+            { title: "Daftar Harga Makanan 3", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIBy2ne99LivJq60P6hvBkX_AzGTfRgAAInDmsbfmv4Vsrgb8cF9U7pAQADAgADeQADOwQ" },
+            { title: "Daftar Harga Snack", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIBymne99LCM565u9Xo8xUt_KQsVN8uAAImDmsbfmv4VimGRu6c3DpwAQADAgADeQADOwQ" },
+            { title: "Daftar Harga Minuman", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIBzWne-DVUDlLRvCv_5GcqDl__Q7yDAAIoDmsbfmv4Vnrw_SlT_RH2AQADAgADeQADOwQ" },
+            { title: "Menu Paket", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIBzmne-FNtvrfjdbUyIAp2kiD3yveMAAIpDmsbfmv4VmjbHZuO6J1-AQADAgADeQADOwQ" },
+            { title: "Menu Prasmanan", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIBz2ne-HvkoyHJiNPOqkG26uXLiyr4AAIqDmsbfmv4Vo_FjWz1riu_AQADAgADeQADOwQ" },
+            { title: "Paket Nasi Kotak", src: "https://hostgambar.vercel.app/image/AgACAgUAAyEGAATk_963AAIB0Gne-KLGHKxekeIIqVe-NYX5hahsAAIrDmsbfmv4VjRpoq1Q3BVyAQADAgADeQADOwQ" }
+        ];
+
+        const menuGrid = document.getElementById('menu-grid');
+        menuImages.forEach((menu, index) => {
+            const delay = index * 100;
+            const html = `
+                <div class="reveal reveal-up" style="transition-delay: ${delay}ms;">
+                    <div onclick="openLightbox('${menu.src}')" class="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group cursor-pointer border border-white/20 aspect-[3/4] relative">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+                            <!-- Inline SVG Zoom In -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                        </div>
+                        <img src="${menu.src}" alt="${menu.title}" loading="lazy" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-4 z-20">
+                            <h3 class="font-semibold text-white text-sm sm:text-base text-center">${menu.title}</h3>
+                        </div>
+                    </div>
+                </div>
+            `;
+            menuGrid.innerHTML += html;
+        });
+
+        // Lightbox functionality
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        function openLightbox(src) {
+            lightboxImg.src = src;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 6. Scroll Reveal Observer
+        const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
