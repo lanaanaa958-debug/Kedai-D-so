@@ -1,0 +1,321 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  Home, 
+  History, 
+  Settings, 
+  Search, 
+  Plus, 
+  Minus, 
+  Trash2, 
+  ShoppingBag,
+  ChefHat,
+  Coffee,
+  IceCream,
+  CheckCircle
+} from 'lucide-react';
+
+// --- DATA DUMMY ---
+const MENU_ITEMS = [
+  { id: 1, name: 'Bakso Super D\'so', price: 25000, category: 'Makanan', icon: '🍲' },
+  { id: 2, name: 'Mie Ayam Jamur', price: 20000, category: 'Makanan', icon: '🍜' },
+  { id: 3, name: 'Nasi Goreng Spesial', price: 28000, category: 'Makanan', icon: '🍛' },
+  { id: 4, name: 'Ayam Bakar Madu', price: 30000, category: 'Makanan', icon: '🍗' },
+  { id: 5, name: 'Es Teh Manis', price: 5000, category: 'Minuman', icon: '🍹' },
+  { id: 6, name: 'Es Jeruk Peras', price: 8000, category: 'Minuman', icon: '🍊' },
+  { id: 7, name: 'Kopi Susu D\'so', price: 15000, category: 'Minuman', icon: '☕' },
+  { id: 8, name: 'Air Mineral', price: 4000, category: 'Minuman', icon: '💧' },
+  { id: 9, name: 'Kerupuk Udang', price: 5000, category: 'Snack', icon: '🍘' },
+  { id: 10, name: 'Sate Usus', price: 4000, category: 'Snack', icon: '🍢' },
+  { id: 11, name: 'Mendoan Panas', price: 12000, category: 'Snack', icon: '🫔' },
+  { id: 12, name: 'Pisang Goreng', price: 10000, category: 'Snack', icon: '🍌' },
+];
+
+const CATEGORIES = ['Semua', 'Makanan', 'Minuman', 'Snack'];
+
+// --- FORMATTER ---
+const formatRupiah = (number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(number);
+};
+
+export default function App() {
+  const [cart, setCart] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Semua');
+  const [showModal, setShowModal] = useState(false);
+
+  // --- LOGIKA KERANJANG ---
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+  };
+
+  const updateQuantity = (id, delta) => {
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const newQty = item.qty + delta;
+          return newQty > 0 ? { ...item, qty: newQty } : item;
+        }
+        return item;
+      })
+    );
+  };
+
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const processPayment = () => {
+    if (cart.length === 0) return;
+    setShowModal(true);
+  };
+
+  const resetOrder = () => {
+    setCart([]);
+    setShowModal(false);
+  };
+
+  // --- KALKULASI HARGA ---
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const tax = subtotal * 0.11; // Pajak 11%
+  const total = subtotal + tax;
+
+  // --- FILTER PRODUK ---
+  const filteredProducts = useMemo(() => {
+    return MENU_ITEMS.filter((item) => {
+      const matchCategory = activeCategory === 'Semua' || item.category === activeCategory;
+      const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCategory && matchSearch;
+    });
+  }, [activeCategory, searchQuery]);
+
+  return (
+    <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
+      
+      {/* --- SIDEBAR KIRI (Navigasi) --- */}
+      <aside className="w-20 lg:w-64 bg-emerald-800 text-white flex flex-col transition-all duration-300 shadow-xl z-20">
+        <div className="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-emerald-700/50">
+          <ChefHat className="w-8 h-8 text-emerald-300" />
+          <h1 className="hidden lg:block ml-3 font-bold text-xl tracking-wide">Kedai D'so</h1>
+        </div>
+        
+        <nav className="flex-1 py-6 flex flex-col gap-2 px-3">
+          <NavItem icon={<Home />} label="Kasir" active />
+          <NavItem icon={<History />} label="Riwayat" />
+          <NavItem icon={<Settings />} label="Pengaturan" />
+        </nav>
+        
+        <div className="p-4 border-t border-emerald-700/50">
+          <div className="flex items-center justify-center lg:justify-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold">
+              A
+            </div>
+            <div className="hidden lg:block">
+              <p className="text-sm font-semibold">Admin Kasir</p>
+              <p className="text-xs text-emerald-300">Shift Pagi</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* --- KONTEN UTAMA (Katalog Produk) --- */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header Section */}
+        <header className="bg-white p-4 lg:p-6 shadow-sm z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Menu Hari Ini</h2>
+            <p className="text-sm text-gray-500">Pilih menu pesanan pelanggan</p>
+          </div>
+          
+          <div className="relative w-full lg:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input 
+              type="text" 
+              placeholder="Cari menu..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+            />
+          </div>
+        </header>
+
+        {/* Kategori Filters */}
+        <div className="px-4 lg:px-6 py-4 flex gap-2 overflow-x-auto hide-scrollbar">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-5 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
+                activeCategory === cat 
+                  ? 'bg-emerald-600 text-white shadow-md' 
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-emerald-50'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Product Grid */}
+        <div className="flex-1 p-4 lg:px-6 overflow-y-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+            {filteredProducts.map(product => (
+              <div 
+                key={product.id}
+                onClick={() => addToCart(product)}
+                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-emerald-200 cursor-pointer transition-all active:scale-95 group flex flex-col h-full"
+              >
+                <div className="w-full aspect-square bg-emerald-50 rounded-xl flex items-center justify-center text-5xl mb-4 group-hover:scale-105 transition-transform">
+                  {product.icon}
+                </div>
+                <div className="mt-auto">
+                  <h3 className="font-semibold text-gray-800 leading-tight mb-1">{product.name}</h3>
+                  <p className="text-emerald-600 font-bold">{formatRupiah(product.price)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          {filteredProducts.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+              <Search className="w-12 h-12 mb-2 opacity-50" />
+              <p>Menu tidak ditemukan</p>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* --- SIDEBAR KANAN (Keranjang / Checkout) --- */}
+      <aside className="w-80 lg:w-96 bg-white border-l border-gray-200 flex flex-col shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] z-20">
+        <div className="p-5 lg:p-6 border-b border-gray-100 bg-emerald-50/50">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <ShoppingBag className="text-emerald-600" />
+            Pesanan Saat Ini
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">Order #KDS-{Math.floor(Math.random() * 10000)}</p>
+        </div>
+
+        {/* Daftar Item Keranjang */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-4">
+          {cart.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 text-center px-4">
+              <ShoppingBag className="w-16 h-16 mb-4 text-gray-200" />
+              <p className="font-medium text-gray-500">Belum ada pesanan</p>
+              <p className="text-sm mt-1">Klik menu di sebelah kiri untuk menambahkan pesanan.</p>
+            </div>
+          ) : (
+            cart.map(item => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
+                <div className="flex-1 mr-3">
+                  <h4 className="font-medium text-gray-800 text-sm">{item.name}</h4>
+                  <p className="text-emerald-600 font-semibold text-sm">{formatRupiah(item.price)}</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => updateQuantity(item.id, -1)}
+                    className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-6 text-center font-medium text-sm">{item.qty}</span>
+                  <button 
+                    onClick={() => updateQuantity(item.id, 1)}
+                    className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => removeFromCart(item.id)}
+                    className="w-7 h-7 ml-1 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Ringkasan Pembayaran */}
+        <div className="p-5 lg:p-6 bg-gray-50 border-t border-gray-200">
+          <div className="space-y-3 mb-4">
+            <div className="flex justify-between text-gray-500 text-sm">
+              <span>Subtotal</span>
+              <span className="font-medium text-gray-700">{formatRupiah(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-gray-500 text-sm">
+              <span>Pajak (11%)</span>
+              <span className="font-medium text-gray-700">{formatRupiah(tax)}</span>
+            </div>
+            <div className="h-px bg-gray-200 my-2"></div>
+            <div className="flex justify-between text-gray-800">
+              <span className="font-bold text-lg">Total</span>
+              <span className="font-bold text-2xl text-emerald-600">{formatRupiah(total)}</span>
+            </div>
+          </div>
+          
+          <button 
+            onClick={processPayment}
+            disabled={cart.length === 0}
+            className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all shadow-lg flex items-center justify-center gap-2
+              ${cart.length === 0 
+                ? 'bg-gray-300 cursor-not-allowed shadow-none' 
+                : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'}`}
+          >
+            Proses Pembayaran
+          </button>
+        </div>
+      </aside>
+
+      {/* --- MODAL SUKSES --- */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl transform transition-all scale-100">
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle className="w-10 h-10 text-emerald-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Pembayaran Berhasil!</h2>
+            <p className="text-gray-500 mb-6">
+              Kembalian dapat diberikan ke pelanggan. Struk sedang dicetak.
+            </p>
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <p className="text-sm text-gray-500 mb-1">Total Dibayar</p>
+              <p className="text-2xl font-bold text-emerald-600">{formatRupiah(total)}</p>
+            </div>
+            <button 
+              onClick={resetOrder}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors"
+            >
+              Pesanan Baru
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Komponen Pembantu untuk Sidebar Item
+function NavItem({ icon, label, active }) {
+  return (
+    <button className={`flex items-center w-full gap-4 px-4 py-3 rounded-xl transition-colors group
+      ${active ? 'bg-emerald-700/50 text-white' : 'text-emerald-100 hover:bg-emerald-700/30'}`}
+    >
+      <div className={`${active ? 'text-emerald-300' : 'text-emerald-300/70 group-hover:text-emerald-300'}`}>
+        {icon}
+      </div>
+      <span className="font-medium hidden lg:block">{label}</span>
+    </button>
+  );
+}
